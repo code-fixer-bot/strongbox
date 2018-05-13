@@ -74,16 +74,10 @@ public abstract class TestCaseWithMavenArtifactGenerationAndIndexing
     protected Optional<RepositoryIndexManager> repositoryIndexManager;
 
     @Inject
-    private PropertiesBooter propertiesBooter;
-
-    @Inject
     protected RepositoryManagementService repositoryManagementService;
 
     @Inject
     protected ArtifactSearchService artifactSearchService;
-
-    @Inject
-    protected LayoutProviderRegistry layoutProviderRegistry;
 
     @Inject
     protected MavenMetadataManager mavenMetadataManager;
@@ -93,10 +87,6 @@ public abstract class TestCaseWithMavenArtifactGenerationAndIndexing
 
     @Inject
     protected ArtifactEventListenerRegistry artifactEventListenerRegistry;
-
-    @Inject
-    private MavenRepositoryFactory mavenRepositoryFactory;
-
 
     protected void createRepositoryWithArtifacts(String storageId,
                                                  RepositoryDto repository,

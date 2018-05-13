@@ -20,11 +20,12 @@ import org.carlspring.strongbox.repository.RepositoryManagementStrategyException
 import org.carlspring.strongbox.services.ConfigurationManagementService;
 import org.carlspring.strongbox.storage.Storage;
 import org.carlspring.strongbox.storage.repository.MavenRepositoryFactory;
-import org.carlspring.strongbox.storage.repository.RepositoryDto;
 import org.carlspring.strongbox.storage.repository.Repository;
+import org.carlspring.strongbox.storage.repository.RepositoryDto;
 import org.carlspring.strongbox.storage.repository.RepositoryTypeEnum;
 import org.carlspring.strongbox.storage.repository.remote.MutableRemoteRepository;
 import org.carlspring.strongbox.testing.artifact.MavenArtifactTestUtils;
+import org.carlspring.strongbox.util.MessageDigestUtils;
 
 import javax.inject.Inject;
 import javax.xml.bind.JAXBException;
@@ -34,6 +35,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,7 +44,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.index.artifact.Gav;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
@@ -67,7 +69,7 @@ public class MavenTestCaseWithArtifactGeneration
     protected MavenRepositoryFactory mavenRepositoryFactory;
 
     @Inject
-    private PropertiesBooter propertiesBooter;
+    protected PropertiesBooter propertiesBooter;
 
     @Inject
     protected ConfigurationManagementService configurationManagementService;
@@ -517,6 +519,26 @@ public class MavenTestCaseWithArtifactGeneration
         repository.setType(RepositoryTypeEnum.PROXY.getType());
 
         createRepository(storageId, repository);
+    }
+
+    protected String calculateChecksum(File file,
+                                       String type)
+            throws Exception
+    {
+        byte[] buffer = new byte[4096];
+        MessageDigest md = MessageDigest.getInstance(type);
+
+        DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md);
+        try
+        {
+            while (dis.read(buffer) != -1) ;
+        }
+        finally
+        {
+            dis.close();
+        }
+
+        return MessageDigestUtils.convertToHexadecimalString(md);
     }
 
 }

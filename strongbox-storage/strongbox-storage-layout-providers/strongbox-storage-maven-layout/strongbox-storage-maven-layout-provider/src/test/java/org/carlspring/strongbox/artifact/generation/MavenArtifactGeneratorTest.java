@@ -95,24 +95,6 @@ public class MavenArtifactGeneratorTest
         assertEquals(expectedPomSHA1, pomSHA1);
     }
 
-    private String calculateChecksum(File file,
-                                     String type)
-            throws Exception
-    {
-        byte[] buffer = new byte[4096];
-        MessageDigest md = MessageDigest.getInstance(type);
 
-        DigestInputStream dis = new DigestInputStream(new FileInputStream(file), md);
-        try
-        {
-            while (dis.read(buffer) != -1) ;
-        }
-        finally
-        {
-            dis.close();
-        }
-
-        return MessageDigestUtils.convertToHexadecimalString(md);
-    }
 
 }
