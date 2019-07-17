@@ -10,12 +10,9 @@ import org.springframework.test.context.TestExecutionListeners;
  * @author Martin Todorov
  */
 @Configuration
-@Import({ NugetLayoutProviderTestConfig.class,
-          ClientConfig.class,
-          EventsConfig.class,
-          CronTasksConfig.class
-})
-public class NugetLayoutProviderCronTasksTestConfig
-{
+@Import({ NugetLayoutProviderTestConfig.class, ClientConfig.class, EventsConfig.class, CronTasksConfig.class })
+public class NugetLayoutProviderCronTasksTestConfig {
 
+    private NugetLayoutProviderCronTasksTestConfig() {
+    }
 }

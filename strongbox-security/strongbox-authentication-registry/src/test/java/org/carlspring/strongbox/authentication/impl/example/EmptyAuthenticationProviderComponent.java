@@ -1,6 +1,7 @@
 package org.carlspring.strongbox.authentication.impl.example;
 
-public class EmptyAuthenticationProviderComponent
-{
+public class EmptyAuthenticationProviderComponent {
 
+    private EmptyAuthenticationProviderComponent() {
+    }
 }

@@ -2,9 +2,7 @@ package org.carlspring.strongbox.client;
 
 import org.carlspring.strongbox.config.ClientConfig;
 import org.carlspring.strongbox.service.ProxyRepositoryConnectionPoolConfigurationService;
-
 import javax.inject.Inject;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -22,15 +20,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 @ContextConfiguration
-public class ArtifactResolverIntegrationTest
-{
+public class ArtifactResolverIntegrationTest {
 
     private static final Logger logger = LoggerFactory.getLogger(ArtifactResolverIntegrationTest.class);
 
     @Configuration
-    @Import({ClientConfig.class})
-    public static class SpringConfig
-    {
+    @Import({ ClientConfig.class })
+    public static class SpringConfig {
+
+        private SpringConfig() {
+        }
     }
 
     private RestArtifactResolver artifactResolver;
@@ -42,59 +41,43 @@ public class ArtifactResolverIntegrationTest
     private ProxyRepositoryConnectionPoolConfigurationService proxyRepositoryConnectionPoolConfigurationService;
 
     @BeforeEach
-    public void setUp()
-    {
-        artifactResolver = new RestArtifactResolver(proxyRepositoryConnectionPoolConfigurationService.getRestClient(),
-                                                    repositoryUrl,
-                                                    new RemoteRepositoryRetryArtifactDownloadConfiguration(MutableRemoteRepositoryRetryArtifactDownloadConfiguration.DEFAULT));
+    public void setUp() {
+        artifactResolver = new RestArtifactResolver(proxyRepositoryConnectionPoolConfigurationService.getRestClient(), repositoryUrl, new RemoteRepositoryRetryArtifactDownloadConfiguration(MutableRemoteRepositoryRetryArtifactDownloadConfiguration.DEFAULT));
     }
 
     @Test
-    public void allConnectionsReleasedTest() throws InterruptedException
-    {
+    public void allConnectionsReleasedTest() throws InterruptedException {
         MultiHttpClientConnThread[] threads = new MultiHttpClientConnThread[10];
-        for (int i = 0; i < threads.length; i++)
-        {
+        for (int i = 0; i < threads.length; i++) {
             threads[i] = new MultiHttpClientConnThread(artifactResolver, repositoryUrl);
             threads[i].start();
         }
-
-        for (int i = 0; i < threads.length; i++)
-        {
+        for (int i = 0; i < threads.length; i++) {
             threads[i].join();
         }
-
         // all connections should be released
         assertEquals(0, proxyRepositoryConnectionPoolConfigurationService.getPoolStats(repositoryUrl).getLeased());
     }
 
-    public static final class MultiHttpClientConnThread extends Thread
-    {
+    public static final class MultiHttpClientConnThread extends Thread {
 
         private RestArtifactResolver artifactResolver;
 
         private String url;
 
-        public MultiHttpClientConnThread(RestArtifactResolver artifactResolver,
-                                         String url)
-        {
+        public MultiHttpClientConnThread(RestArtifactResolver artifactResolver, String url) {
             this.artifactResolver = artifactResolver;
             this.url = url;
         }
 
         @Override
-        public final void run()
-        {
-            try (CloseableRestResponse response = artifactResolver.get(url))
-            {
-                // Left empty because the original method had no other logic than the now-removed
-                // closure of a CloseableRestResponse
-            }
-            catch (Exception e)
-            {
+        public final void run() {
+            try (CloseableRestResponse response = artifactResolver.get(url)) {
+            // Left empty because the original method had no other logic than the now-removed
+            // closure of a CloseableRestResponse
+            } catch (Exception e) {
                 logger.error(e.getMessage(), e);
             }
         }
-
     }
 }

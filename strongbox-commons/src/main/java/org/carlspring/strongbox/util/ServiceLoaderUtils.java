@@ -9,24 +9,20 @@ import java.util.Set;
 /**
  * @author Przemyslaw Fusik
  */
-public final class ServiceLoaderUtils
-{
+public final class ServiceLoaderUtils {
 
     @Nonnull
-    public static Set<Class<?>> load(Class<?>... classes)
-    {
+    public static Set<Class<?>> load(Class<?>... classes) {
         Set<Class<?>> contextClasses = new HashSet<>();
-        if (classes != null)
-        {
-            Arrays.asList(classes).forEach(
-                    clazz ->
-                    {
-                        ServiceLoader<?> loader = ServiceLoader.load(clazz);
-                        loader.forEach(impl -> contextClasses.add(impl.getClass()));
-                    }
-            );
+        if (classes != null) {
+            Arrays.asList(classes).forEach(clazz -> {
+                ServiceLoader<?> loader = ServiceLoader.load(clazz);
+                loader.forEach(impl -> contextClasses.add(impl.getClass()));
+            });
         }
         return contextClasses;
     }
 
+    private ServiceLoaderUtils() {
+    }
 }

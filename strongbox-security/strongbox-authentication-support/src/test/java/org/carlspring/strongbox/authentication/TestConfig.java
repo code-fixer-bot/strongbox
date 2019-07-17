@@ -9,9 +9,8 @@ import org.springframework.context.annotation.Import;
  */
 @Configuration
 @Import({ UsersConfig.class })
-public class TestConfig
-{
+public class TestConfig {
 
-
-
+    private TestConfig() {
+    }
 }

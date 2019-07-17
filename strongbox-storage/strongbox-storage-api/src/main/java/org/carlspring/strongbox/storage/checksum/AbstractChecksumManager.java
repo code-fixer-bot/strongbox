@@ -3,7 +3,8 @@ package org.carlspring.strongbox.storage.checksum;
 /**
  * @author carlspring
  */
-public class AbstractChecksumManager implements ChecksumManager
-{
+public class AbstractChecksumManager implements ChecksumManager {
 
+    private AbstractChecksumManager() {
+    }
 }

@@ -7,16 +7,9 @@ import org.springframework.context.annotation.Import;
  * @author carlspring
  */
 @Configuration
-@Import({ RawLayoutProviderConfig.class,
-          EventsConfig.class,
-          StorageCoreConfig.class,
-          StorageApiConfig.class,
-          CommonConfig.class,
-          ClientConfig.class,
-          DataServiceConfig.class,
-          TestingCoreConfig.class
-        })
-public class RawLayoutProviderTestConfig
-{
-    
+@Import({ RawLayoutProviderConfig.class, EventsConfig.class, StorageCoreConfig.class, StorageApiConfig.class, CommonConfig.class, ClientConfig.class, DataServiceConfig.class, TestingCoreConfig.class })
+public class RawLayoutProviderTestConfig {
+
+    private RawLayoutProviderTestConfig() {
+    }
 }
