@@ -2,7 +2,6 @@ package org.carlspring.strongbox.security.certificates;
 
 import org.carlspring.strongbox.net.ConnectionChecker;
 import org.carlspring.strongbox.testing.AssignedPorts;
-
 import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +19,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -34,13 +32,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ActiveProfiles(profiles = "test")
 @ContextConfiguration
-public class KeyStoreManagerIntegrationTestIT
-{
+public class KeyStoreManagerIntegrationTestIT {
 
     @org.springframework.context.annotation.Configuration
-    @ComponentScan(basePackages = { "org.carlspring.strongbox.security",
-                                    "org.carlspring.strongbox.testing" })
-    public static class SpringConfig { }
+    @ComponentScan(basePackages = { "org.carlspring.strongbox.security", "org.carlspring.strongbox.testing" })
+    public static class SpringConfig {
+
+        private SpringConfig() {
+        }
+    }
 
     @Inject
     private AssignedPorts assignedPorts;
@@ -63,8 +63,7 @@ public class KeyStoreManagerIntegrationTestIT
 
     private final Proxy PROXY_HTTP = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(PROXY_HOST, PROXY_HTTP_PORT));
 
-    private static final PasswordAuthentication credentials = new PasswordAuthentication(PROXY_USERNAME,
-                                                                                         PROXY_PASSWORD.toCharArray());
+    private static final PasswordAuthentication credentials = new PasswordAuthentication(PROXY_USERNAME, PROXY_PASSWORD.toCharArray());
 
     public static int LDAPS_PORT;
 
@@ -73,125 +72,65 @@ public class KeyStoreManagerIntegrationTestIT
     @Inject
     KeyStoreManager keyStoreManager;
 
-
     @BeforeEach
-    public void init()
-            throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   KeyStoreException
-    {
-        //noinspection ResultOfMethodCallIgnored
+    public void init() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException {
+        // noinspection ResultOfMethodCallIgnored
         new File("target/test-resources").mkdirs();
         f = Paths.get("target", "test-resources", "test.jks");
-
         PROXY_HTTP_PORT = assignedPorts.getPort("port.littleproxy");
         LDAPS_PORT = assignedPorts.getPort("port.unboundid");
     }
 
     @Test
-    public void testWithoutProxy()
-            throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   KeyStoreException,
-                   KeyManagementException
-    {
+    public void testWithoutProxy() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
         keyStoreManager.createNew(f, KEYSTORE_PASSWORD.toCharArray());
-        final KeyStore ks = keyStoreManager.addCertificates(f,
-                                                            KEYSTORE_PASSWORD.toCharArray(),
-                                                            InetAddress.getLocalHost(),
-                                                            LDAPS_PORT);
-
+        final KeyStore ks = keyStoreManager.addCertificates(f, KEYSTORE_PASSWORD.toCharArray(), InetAddress.getLocalHost(), LDAPS_PORT);
         assertEquals(1, ks.size(), "localhost should have three certificates in the chain");
-
         Map<String, Certificate> certs = keyStoreManager.listCertificates(f, KEYSTORE_PASSWORD.toCharArray());
-        for (final Map.Entry<String, Certificate> cert : certs.entrySet())
-        {
-            System.out.println(cert.getKey() + " : " + ((X509Certificate)cert.getValue()).getSubjectDN());
+        for (final Map.Entry<String, Certificate> cert : certs.entrySet()) {
+            System.out.println(cert.getKey() + " : " + ((X509Certificate) cert.getValue()).getSubjectDN());
         }
-
         final String newPassword = "newpassword";
-
         keyStoreManager.changePassword(f, KEYSTORE_PASSWORD.toCharArray(), newPassword.toCharArray());
         keyStoreManager.removeCertificates(f, newPassword.toCharArray(), InetAddress.getLocalHost(), LDAPS_PORT);
         certs = keyStoreManager.listCertificates(f, newPassword.toCharArray());
-
         assertEquals(0, certs.size(), "Expected empty certs.");
     }
 
     @Test
-    public void testSocksProxy()
-            throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   KeyStoreException,
-                   KeyManagementException
-    {
-        if (!ConnectionChecker.checkServiceAvailability(SOCKS_HOST, PROXY_SOCKS_PORT, 5000))
-        {
+    public void testSocksProxy() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        if (!ConnectionChecker.checkServiceAvailability(SOCKS_HOST, PROXY_SOCKS_PORT, 5000)) {
             System.out.println("WARN: Skipping the testSocks() test, as the proxy server is unreachable.");
-
             return;
         }
-
         keyStoreManager.createNew(f, KEYSTORE_PASSWORD.toCharArray());
-        final KeyStore ks = keyStoreManager.addSslCertificates(f,
-                                                               KEYSTORE_PASSWORD.toCharArray(),
-                                                               PROXY_SOCKS,
-                                                               credentials,
-                                                               "google.com",
-                                                               443);
-
+        final KeyStore ks = keyStoreManager.addSslCertificates(f, KEYSTORE_PASSWORD.toCharArray(), PROXY_SOCKS, credentials, "google.com", 443);
         assertEquals(1, ks.size(), "localhost should have one certificate in the chain");
-
         Map<String, Certificate> certs = keyStoreManager.listCertificates(f, KEYSTORE_PASSWORD.toCharArray());
-        for (final Map.Entry<String, Certificate> cert : certs.entrySet())
-        {
+        for (final Map.Entry<String, Certificate> cert : certs.entrySet()) {
             System.out.println(cert.getKey() + " : " + ((X509Certificate) cert.getValue()).getSubjectDN());
         }
-
         final String newPassword = "newpassword";
-
         keyStoreManager.changePassword(f, KEYSTORE_PASSWORD.toCharArray(), newPassword.toCharArray());
         keyStoreManager.removeCertificates(f, newPassword.toCharArray(), InetAddress.getLocalHost(), LDAPS_PORT);
         certs = keyStoreManager.listCertificates(f, newPassword.toCharArray());
-
         assertTrue(certs.isEmpty());
     }
 
     @Disabled
     @Test
-    public void testHttpProxy()
-            throws IOException,
-                   CertificateException,
-                   NoSuchAlgorithmException,
-                   KeyStoreException,
-                   KeyManagementException
-    {
-        if (!ConnectionChecker.checkServiceAvailability(PROXY_HOST, PROXY_HTTP_PORT, 5000))
-        {
+    public void testHttpProxy() throws IOException, CertificateException, NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
+        if (!ConnectionChecker.checkServiceAvailability(PROXY_HOST, PROXY_HTTP_PORT, 5000)) {
             System.out.println("WARN: Skipping the testHttp() test, as the proxy server is unreachable.");
             return;
         }
-
         System.out.println("Executing HTTP proxy test...");
-
         keyStoreManager.createNew(f, KEYSTORE_PASSWORD.toCharArray());
-        final KeyStore ks = keyStoreManager.addHttpsCertificates(f,
-                                                                 KEYSTORE_PASSWORD.toCharArray(),
-                                                                 PROXY_HTTP,
-                                                                 credentials,
-                                                                 "google.com",
-                                                                 443);
-
+        final KeyStore ks = keyStoreManager.addHttpsCertificates(f, KEYSTORE_PASSWORD.toCharArray(), PROXY_HTTP, credentials, "google.com", 443);
         assertEquals(3, ks.size(), "google.com should have three certificate in the chain");
-
         Map<String, Certificate> certs = keyStoreManager.listCertificates(f, KEYSTORE_PASSWORD.toCharArray());
-        for (final Map.Entry<String, Certificate> cert : certs.entrySet())
-        {
+        for (final Map.Entry<String, Certificate> cert : certs.entrySet()) {
             System.out.println(cert.getKey() + " : " + ((X509Certificate) cert.getValue()).getSubjectDN());
         }
     }
-
 }
